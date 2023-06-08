@@ -2,6 +2,9 @@ const http = require('http')
 const fs = require('fs')
 const path = require('path')
 
+const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, 'utf-8')
+const dataObj = JSON.parse(data)
+
 const server = http.createServer((req, res) => {
   const pathName = req.url
 
@@ -11,14 +14,19 @@ const server = http.createServer((req, res) => {
     res.end('This is the PRODUCT')
   } else if (pathName === '/api') {
     // 读取 dev-data 文件夹中json文件内容作为响应数据
-    fs.readFile(__dirname + '/dev-data/data.json', 'utf-8', (err, data) => {
-      if (err) return err
-      const productData = JSON.parse(data)
-      res.writeHead(200, {
-        'Content-Type': 'application/json'
-      })
-      res.end(data)
+    // 每次访问api接口都会读取文件，改为先读取一次
+    // fs.readFile(__dirname + '/dev-data/data.json', 'utf-8', (err, data) => {
+    //   if (err) return err
+    //   const productData = JSON.parse(data)
+    //   res.writeHead(200, {
+    //     'Content-Type': 'application/json'
+    //   })
+    //   res.end(data)
+    // })
+    res.writeHead(200, {
+      'Content-Type': 'application/json'
     })
+    res.end(data)
   } else {
     res.writeHead(404, {
       'Content-Type': 'text/html'
