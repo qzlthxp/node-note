@@ -1,5 +1,6 @@
 const http = require('http')
 const fs = require('fs')
+const url = require('url')
 
 const replaceTemplate = (temp, product) => {
   let output = temp.replace(/{%PRODUCTNAME%}/g, product.productName)
@@ -32,7 +33,41 @@ const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, 'utf-8')
 const dataObj = JSON.parse(data)
 
 const server = http.createServer((req, res) => {
-  const pathName = req.url
+  /**
+   * console.log(url.parse(req.url))
+   * Url {
+      protocol: null,
+      slashes: null,
+      auth: null,
+      host: null,
+      port: null,
+      hostname: null,
+      hash: null,
+      search: '?id=0',
+      query: 'id=0',
+      pathname: '/product',
+      path: '/product?id=0',
+      href: '/product?id=0'
+    }
+    
+    console.log(url.parse(req.url, true))
+    Url {
+      protocol: null,
+      slashes: null,
+      auth: null,
+      host: null,
+      port: null,
+      hostname: null,
+      hash: null,
+      search: '?id=0',
+      query: [Object: null prototype] { id: '0' },
+      pathname: '/product',
+      path: '/product?id=0',
+      href: '/product?id=0'
+    }
+   */
+  const pathName = url.parse(req.url).pathname
+  const query = url.parse(req.url, true).query
 
   if (pathName === '/' || pathName === '/overview') {
     // Overview page
@@ -47,9 +82,16 @@ const server = http.createServer((req, res) => {
     // api page
     res.writeHead(200, { 'Content-Type': 'application/json' })
     res.end(data)
-  } else if (pathName.startsWith('/product')) {
+  } else if (pathName === '/product') {
     // Product page
-    res.end('This is the PRODUCT')
+    /** 使用 req.url 获取的URL是完整路由，它可能包含了一些参数，例如：
+     * /product?id=1 这就无法匹配 /product，因此页面会直接跳转到404
+     * 因此需要使用 nodejs 提供的 url 模块来解析路由
+     */
+    const product = dataObj.find((item) => item.id == query.id)
+    const html = replaceTemplate(tempProduct, product)
+    res.writeHead(200, { 'Content-Type': 'text/html' })
+    res.end(html)
   } else {
     res.writeHead(404, {
       'Content-type': 'text/html',
