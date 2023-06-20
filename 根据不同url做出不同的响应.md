@@ -119,6 +119,7 @@ server.listen(8000, '127.0.0.1', () => {
 -   text/html ： HTML格式
 -   text/plain ：纯文本格式   
 -   text/xml ： XML格式
+-   text/css ：css文件
 -   image/gif ：gif图片格式  
 -   image/jpeg ：jpg图片格式 
 -   image/png：png图片格式
